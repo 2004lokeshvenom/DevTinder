@@ -10,7 +10,7 @@ app.use("/venom", (req,res)=>{
 });
 
 app.use((req,res)=>{
-    res.send("namaste is from main normal");
+    res.send("is from main normal");
 });
 
 
