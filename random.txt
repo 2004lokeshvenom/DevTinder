@@ -1,0 +1,30 @@
+  "firstName": "Lokesh",
+  "lastName": "Vanamayya",
+  "age": 21,
+  "email": "lokeshvanamayya@gmail.com",
+  "password": "2004lokesh",
+  "gender": "Male"
+
+
+  "firstName": "Nagasri",
+  "lastName": "Surisetti",
+  "age": 23,
+  "email": "nagasrisurisetti@gmail.com",
+  "password": "nagasri2002",
+  "gender": "Female",
+
+
+  "firstName": "Ekambareswarun",
+  "lastName": "Surisetti",
+  "age": 47,
+  "email": "swarunsurisetti@gmail.com",
+  "password": "swarun1979",
+  "gender": "Male",
+
+
+  "firstName": "Surisetti V Lakshmi",
+  "lastName": "Venkata",
+  "age": 42,
+  "email": "venkatalakshmisurisetti@gmail.com",
+  "password": "lakshmi1983",
+  "gender": "Female",

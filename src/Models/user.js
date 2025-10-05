@@ -1,4 +1,5 @@
 const mongoose=require("mongoose");
+const Validator=require("validator");
 const NewSchema=mongoose.Schema({
     firstName:{
         type:String
@@ -6,14 +7,14 @@ const NewSchema=mongoose.Schema({
     lastName:{
         type:String
     },
-    age:{
-        type:Number
-    },
     email:{
         type:String
     },
     password:{
-        type:String
+        type:String,
+    },
+    age:{
+        type:Number
     },
     gender:{
         type:String
