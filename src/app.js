@@ -1,14 +1,36 @@
-const express = require("express");
-const app = express();
-const connectDB=require("./config/database");
-const User=require("./Models/user");
-const { ReturnDocument } = require("mongodb");
-const Validator=require("validator");
-const {validateuser}=require("./utils/validate");
-const bcrypt =require("bcrypt");
+const express = require("express");                 //importing express server
+const app = express();                              //express server
+const connectDB=require("./config/database");       //connecting data base to our mongodb account
+const User=require("./Models/user");                //mongodb scheama
+const {validateuser}=require("./utils/validate");   //validation function
+const bcrypt =require("bcrypt");                    //password encryption
+const validator = require("validator");             //validate library
 
 app.use(express.json());
 
+//login auth
+app.post("/login",async(req,res)=>{
+    const {email,password}=req.body;
+    try{
+        if(!email || !validator.isEmail(email) || !password){
+            throw new Error("invalid credintials");
+        }
+        const user=await User.findOne({email:email});
+        if(!user){
+            throw new Error("invalid credintials");
+        }
+        const passwordcheck=await bcrypt.compare(password,user.password);
+        if(!passwordcheck){
+            throw new Error("invalid credintials");
+        }
+        res.send("login successfull");
+    }
+    catch(err){
+        res.status(400).send("something went wrong"+err);
+    }
+})
+
+//signup db pushing
 app.post("/signup",async (req,res)=>{
     try{
         validateuser(req);
@@ -31,6 +53,7 @@ app.post("/signup",async (req,res)=>{
     }
 });
 
+//modifying existing db
 app.patch("/update",async (req,res)=>{
     const userId=req.body.userId;
     const data=req.body;
@@ -63,6 +86,7 @@ app.patch("/update",async (req,res)=>{
     }
 });
 
+//getting existing user full info with id
 app.get("/user",async(req,res)=>{
     const userEmail=req.body.email;
     try{
@@ -80,6 +104,8 @@ app.get("/user",async(req,res)=>{
         res.status(404).send("something went wrong"+error);
     }
 })
+
+//getting everyone data
 app.get("/feed",async(req,res)=>{
     try{
     const users=await User.find();
@@ -96,7 +122,6 @@ app.get("/feed",async(req,res)=>{
         res.status(404).send("something went wrong");
     }
 })
-
 
 connectDB().then(()=>{
     console.log("connection established successfully with database");
