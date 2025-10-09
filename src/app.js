@@ -5,8 +5,12 @@ const User=require("./Models/user");                //mongodb scheama
 const {validateuser}=require("./utils/validate");   //validation function
 const bcrypt =require("bcrypt");                    //password encryption
 const validator = require("validator");             //validate library
+const cookieParser=require("cookie-parser");
+const jwt=require("jsonwebtoken");
+const {userAuth}=require("./middlewares/auth");
 
 app.use(express.json());
+app.use(cookieParser());
 
 //login auth
 app.post("/login",async(req,res)=>{
@@ -22,6 +26,10 @@ app.post("/login",async(req,res)=>{
         const passwordcheck=await bcrypt.compare(password,user.password);
         if(!passwordcheck){
             throw new Error("invalid credintials");
+        }
+        else{
+            const token=jwt.sign({_id:user._id},"2004lokesh",{expiresIn:"1d"});
+            res.cookie("token",token);
         }
         res.send("login successfull");
     }
@@ -54,9 +62,9 @@ app.post("/signup",async (req,res)=>{
 });
 
 //modifying existing db
-app.patch("/update",async (req,res)=>{
-    const userId=req.body.userId;
-    const data=req.body;
+app.patch("/update",userAuth,async (req,res)=>{
+    const userId=req.user._id;
+    const data=req.user;
     try{
     //password is not allowed to change here in patch as of now
     const ALLOWED=["firstName","lastName","age","gender","userId"];
@@ -82,23 +90,15 @@ app.patch("/update",async (req,res)=>{
     }
     catch(err){
         console.log(err);
-        res.status(500).send("something went wrong"+err);
+        res.status(500).send("something went wrong in updating"+err);
     }
 });
 
 //getting existing user full info with id
-app.get("/user",async(req,res)=>{
-    const userEmail=req.body.email;
+app.get("/user", userAuth, async(req,res)=>{
     try{
-    const users=await User.findOne({email:userEmail});
-    if(!users){
-        console.log("user not found try again");
-        res.status(404).send("user not found try again after signing up");
-    }
-    else{
-        console.log("user found successfully");
+        const users=req.user;
         res.send("user found successfully"+ users);
-    }
     }
     catch(error){
         res.status(404).send("something went wrong"+error);
@@ -106,11 +106,11 @@ app.get("/user",async(req,res)=>{
 })
 
 //getting everyone data
-app.get("/feed",async(req,res)=>{
+app.get("/feed", userAuth,async(req,res)=>{
     try{
     const users=await User.find();
     if(users.length==0){
-        console.log("users not found try again");
+        console.log("users not found try adding some users");
         res.status(404).send("users not found");
     }
     else{

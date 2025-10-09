@@ -1,27 +1,26 @@
 // middlewares/auth.js
-const hellovenom2key = (req,res,next)=>{
-    const authkey="xyz";
-    const authentication = authkey==="xyz";
-    if(!authentication){
-        console.log("bad authkey");
-        return res.status(401).send("unauthorized authentication");
-    }
-    console.log("auth key successfully");
-    next();
-}
+const jwt=require("jsonwebtoken");
+const User=require("../Models/user");
 
-const venomkey = (req,res,next)=>{
-    const authkey="xyz";
-    const authentication = authkey==="xyz";
-    if(!authentication){
-        console.log("bad authkey");
-        return res.status(401).send("unauthorized authentication");
+const userAuth = async(req,res,next)=>{
+    try{const cookies=req.cookies;
+    const {token}=cookies;
+    if(!token){
+        throw new Error("token is not valid");
     }
-    console.log("auth key successfully");
+    const decoddedMessage=jwt.verify(token,"2004lokesh");
+    const users=await User.findById(decoddedMessage._id);
+    if(!users){
+        throw new Error("user is not found somehow");
+    }
+    req.user=users;
     next();
+    }
+    catch(err){
+        res.status(400).send("ERROR"+err);
+    }
 }
 
 module.exports = {
-    hellovenom2key,
-    venomkey
+    userAuth
 };

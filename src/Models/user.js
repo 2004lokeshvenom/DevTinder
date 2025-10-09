@@ -1,5 +1,4 @@
 const mongoose=require("mongoose");
-const Validator=require("validator");
 const NewSchema=mongoose.Schema({
     firstName:{
         type:String
