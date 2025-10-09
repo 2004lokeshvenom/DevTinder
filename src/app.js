@@ -17,18 +17,18 @@ app.post("/login",async(req,res)=>{
     const {email,password}=req.body;
     try{
         if(!email || !validator.isEmail(email) || !password){
-            throw new Error("invalid credintials");
+            throw new Error("invalid credintials a");
         }
         const user=await User.findOne({email:email});
         if(!user){
-            throw new Error("invalid credintials");
+            throw new Error("invalid credintials b");
         }
-        const passwordcheck=await bcrypt.compare(password,user.password);
+        const passwordcheck=await user.validatePassword(password);
         if(!passwordcheck){
-            throw new Error("invalid credintials");
+            throw new Error("invalid credintials c");
         }
         else{
-            const token=jwt.sign({_id:user._id},"2004lokesh",{expiresIn:"1d"});
+            const token=await user.getJWT();
             res.cookie("token",token);
         }
         res.send("login successfull");
