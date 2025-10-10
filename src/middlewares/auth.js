@@ -8,8 +8,8 @@ const userAuth = async(req,res,next)=>{
     if(!token){
         throw new Error("token is not valid");
     }
-    const decoddedMessage=jwt.verify(token,"2004lokesh");
-    const users=await User.findById(decoddedMessage._id);
+    const decodedMessage=jwt.verify(token,process.env.JWT_SECRET || "2004lokesh");
+    const users=await User.findById(decodedMessage._id);
     if(!users){
         throw new Error("user is not found somehow");
     }
@@ -19,7 +19,7 @@ const userAuth = async(req,res,next)=>{
     catch(err){
         res.status(400).send("ERROR"+err);
     }
-}
+};
 
 module.exports = {
     userAuth
