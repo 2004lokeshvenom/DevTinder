@@ -18,6 +18,8 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async(req,res)=>
         if(!isToUserIdValid){
             throw new Error("to user id is not valid");
         }
+        const oppositePerson=isToUserIdValid.lastName
+        const sameSidePerson=req.user.lastName
         const allowedStatus=["interested","ignored"];
         if(!allowedStatus.includes(status)){
             throw new Error("given status is not allowed");
@@ -28,7 +30,7 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async(req,res)=>
                 {fromUserId,toUserId},
                 {fromUserId:toUserId,toUserId:fromUserId},
             ]
-        }).populate("fromUserId","lastName").populate("toUserId","lastName");
+        })
         if(isConnectionExists){
             throw new Error("request already exists");
         }
@@ -42,7 +44,7 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async(req,res)=>
         const data=await request.save();
 
         res.json({
-            message:"connection request send succcessfully",
+            message:`connection request send succcessfully ${sameSidePerson} send request to ${oppositePerson}`,
             data,
         })
     }catch(err){
@@ -59,7 +61,7 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, r
             throw new Error("Status is not allowed");
         }
 
-        const request = await connectionrequestmodel.findById(requestId).populate("fromUserId","lastName").populate("toUserId","lastName");
+        const request = await connectionrequestmodel.findById(requestId)
         if (!request) throw new Error("Request ID not found");
 
         if(request.status!="interested") throw new Error("requested id has not interested button");
@@ -67,12 +69,15 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, r
         if (request.toUserId.toString() !== req.user._id.toString()) {
             throw new Error("Log in with appropriate user ID to review this request");
         }
+        const oppositeGuy=await User.findById(request.fromUserId);
+        const oppositeGuyName=oppositeGuy.lastName
+        const sameSidePersonName=req.user.lastName
 
         request.status = status;
         const savedRequest = await request.save();
 
         res.json({
-            message: `Request ${status} successfully`,
+            message: `Request ${status} successfully that is ${sameSidePersonName} reviewed ${oppositeGuyName} 's request`,
             data: savedRequest,
         });
     } catch (err) {

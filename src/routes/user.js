@@ -52,21 +52,44 @@ userRouter.get("/user/requests",userAuth,async(req,res)=>{
     }
 })
 
-userRouter.get("/user/feed",async (req,res)=>{
-    try{
-        const users=await User.find();
-        if(users.length==0){
-            console.log("users not found try adding some users");
-            res.status(404).send("users not found");
-        }
-        else{
-            console.log("users found successfully");
-            res.send("users found successfully"+ users);
-        }
-        }
-        catch(err){
-            res.status(404).send("something went wrong"+err);
-        }
+userRouter.get("/user/feed",userAuth,async(req,res)=>{
+  try{
+    let limit= req.query.limit
+    limit=limit>50?50:limit;
+    const page=req.query.page;
+    const skip=(page-1)*limit;
+
+    const loggedInUser=req.user;
+    const notRequired=await connectionrequestmodel.find({
+      $or:[
+        {fromUserId:loggedInUser._id},
+        {toUserId:loggedInUser._id},
+      ]
+    }).select("fromUserId toUserId")
+
+    const idStrings=new Set();
+    idStrings.add(loggedInUser._id.toString())
+    notRequired.forEach((a)=>{
+      idStrings.add(a.fromUserId.toString()),
+      idStrings.add(a.toUserId.toString())
+    })
+
+    const data=await User.find({
+        _id :{$nin:Array.from(idStrings)}
+    }).select("firstName lastName age gender")
+      .skip(skip)
+      .limit(limit)
+
+    if(!data || data.length===0){
+      throw new Error("no feed found or use appropriate limit and page")
+    }
+    res.json({message:"data feed successfully",
+      data:data
+    })
+  }
+  catch(err){
+    res.status(404).send("something went wrong"+err);
+  }
 })
 
 module.exports=userRouter;
