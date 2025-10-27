@@ -1,6 +1,6 @@
 const express=require("express");
 const authRouter=express.Router();
-const User=require("../Models/user");
+const User=require("../Models/userdb");
 const bcrypt=require("bcrypt");
 const {validateuser}=require("../utils/validate");
 
@@ -54,6 +54,10 @@ authRouter.post("/login", async (req, res) => {
 });
 
 authRouter.post("/logout",(req,res)=>{
+    // res.cookie("token", null, {
+    //   expires: new Date(Date.now())
+    // });
+
     res.clearCookie("token");
     console.log("logout successfull");
     res.send("logout successfull");
