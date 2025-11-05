@@ -7,7 +7,7 @@ const Validator=require("validator");
 
 profileRouter.get("/profile/view",userAuth,(req,res)=>{
     try{
-        res.send("view it below this"+req.user);
+        res.json({message:"view it below this",data:req.user});
     }catch(err){
         res.status(400).send("something went wrong while viewing profile"+err);
     }
@@ -16,7 +16,7 @@ profileRouter.get("/profile/view",userAuth,(req,res)=>{
 profileRouter.patch("/profile/edit",userAuth,async (req,res)=>{
     try{
     const data=req.body;
-    const allowed=["firstName","lastName","age","email","gender"];
+    const allowed=["firstName","lastName","age","email","gender","photoUrl","about"];
     const isallowed=Object.keys(data).every((k)=>allowed.includes(k));
     if(!isallowed){
         throw new Error("specified change is not allowed");
