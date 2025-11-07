@@ -7,9 +7,9 @@ const Validator=require("validator");
 
 profileRouter.get("/profile/view",userAuth,(req,res)=>{
     try{
-        res.json({message:"view it below this",data:req.user});
+        res.status(200).json({message:"view it below this",data:req.user});
     }catch(err){
-        res.status(400).send("something went wrong while viewing profile"+err);
+        res.status(500).json({ message: "something went wrong while viewing profile", error: err.message });
     }
 })
 
@@ -21,15 +21,18 @@ profileRouter.patch("/profile/edit",userAuth,async (req,res)=>{
     if(!isallowed){
         throw new Error("specified change is not allowed");
     }
-    await User.findByIdAndUpdate(req.user._id,data,
+    const updatedUser = await User.findByIdAndUpdate(req.user._id,data,
         {
             runValidators:true,
             new:true
         }
     );
-    res.send("edited successfully");
+    if (!updatedUser) {
+        throw new Error("User not found");
+    }
+    res.status(200).json({ message: "edited successfully" });
     }catch(err){
-        res.status(400).send("ERROR while editing profile"+err);
+        res.status(400).json({ message: "ERROR while editing profile", error: err.message });
     }
 });
 
@@ -37,7 +40,7 @@ profileRouter.patch("/profile/password",userAuth,async(req,res)=>{
     try{
         const {currentPassword,newPassword}=req.body;
         if(!currentPassword||!newPassword){
-            throw new Error("enter both current and old password");
+            throw new Error("enter both current and new password");
         }
         const validPassword=Validator.isStrongPassword(newPassword);
         if(!validPassword){
@@ -55,10 +58,10 @@ profileRouter.patch("/profile/password",userAuth,async(req,res)=>{
         const users=await User.findByIdAndUpdate(req.user._id,data,{
             new:true
         });
-        res.send("password updated successfully");
+        res.status(200).json({ message: "password updated successfully" });
     }
     catch(err){
-        res.status(400).send("ERROR while password updation"+err);
+        res.status(400).json({ message: "ERROR while password updation", error: err.message });
     }
 });
 

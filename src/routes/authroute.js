@@ -1,15 +1,15 @@
-const express=require("express");
-const authRouter=express.Router();
-const User=require("../Models/userdb");
-const bcrypt=require("bcrypt");
-const {validateuser}=require("../utils/validate");
+const express = require('express')
+const authRouter = express.Router()
+const User = require('../Models/userdb')
+const bcrypt = require('bcrypt')
+const { validateuser } = require('../utils/validate')
 
-authRouter.post("/signup", async (req, res) => {
+authRouter.post('/signup', async (req, res) => {
   try {
-    validateuser(req);
+    validateuser(req)
 
-    const { firstName, lastName, email, password, age, gender,photoUrl,about } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const { firstName, lastName, email, password, age, gender, photoUrl, about } = req.body
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = new User({
       firstName,
@@ -19,50 +19,49 @@ authRouter.post("/signup", async (req, res) => {
       age,
       gender,
       photoUrl,
-      about
-    });
+      about,
+    })
 
-    await user.save();
-    console.log(user);
-    res.status(201).json({ message: "User saved successfully" });
+    await user.save()
+    res.status(201).json({ message: 'User saved successfully' })
   } catch (err) {
-    res.status(400).send("Something went wrong while saving data: " + err.message);
+    res.status(400).json({ message: 'Something went wrong while saving data', error: err.message })
   }
-});
+})
 
-authRouter.post("/login", async (req, res) => {
+authRouter.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body
     if (!email || !password) {
-      throw new Error("Enter credentials");
+      throw new Error('Enter credentials')
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email })
     if (!user) {
-      throw new Error("User not found");
+      return res.status(404).json({ message: 'User not found' })
     }
 
-    const passwordCheck = await user.validatePassword(password);
+    const passwordCheck = await user.validatePassword(password)
     if (!passwordCheck) {
-      throw new Error("Wrong password credentials");
+      return res.status(401).json({ message: 'Wrong password credentials' })
     }
 
-    const token = user.getJWT();
-    res.cookie("token", token, { httpOnly: true });
-    res.status(200).json({ message: "Login successful", data:user });
+    const token = user.getJWT()
+    res.cookie('token', token, { httpOnly: true })
+    res.status(200).json({ message: 'Login successful', data: user })
   } catch (err) {
-    res.status(400).send("Something went wrong while logging in: " + err.message);
+    const statusCode = err.message === 'Enter credentials' ? 400 : 401
+    res.status(statusCode).json({ message: 'Something went wrong while logging in', error: err.message })
   }
-});
+})
 
-authRouter.post("/logout",(req,res)=>{
-    // res.cookie("token", null, {
-    //   expires: new Date(Date.now())
-    // });
+authRouter.post('/logout', (req, res) => {
+  // res.cookie("token", null, {
+  //   expires: new Date(Date.now())
+  // });
 
-    res.clearCookie("token");
-    console.log("logout successfull");
-    res.send("logout successfull");
-});
+  res.clearCookie('token')
+  res.status(200).json({ message: 'Logout successful' })
+})
 
-module.exports=authRouter;
+module.exports = authRouter

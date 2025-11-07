@@ -6,7 +6,7 @@ const authRouter = require('./routes/authroute')
 const profileRouter = require('./routes/profile')
 const requestRouter = require('./routes/request')
 const userRouter = require('./routes/user')
-const cors = require('cors');
+const cors = require('cors')
 
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
 app.use(express.json())
@@ -19,11 +19,11 @@ app.use('/', userRouter)
 
 connectDB()
   .then(() => {
-    console.log('connection established successfully with database')
+    console.log('Database connected successfully')
     app.listen(7676, () => {
-      console.log('server is succesfully on port 7676')
+      console.log('Server is listening on port 7676')
     })
   })
-  .catch(() => {
-    console.log('something wrong in connecting database')
+  .catch((err) => {
+    console.log('Database connection failed:', err.message)
   })

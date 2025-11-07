@@ -11,15 +11,20 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async(req,res)=>
         const toUserId=req.params.toUserId;
         const status=req.params.status;
 
-        if(fromUserId==toUserId){
+        // Validate ObjectId format
+        if (!toUserId || !/^[0-9a-fA-F]{24}$/.test(toUserId)) {
+            throw new Error("Invalid user ID format");
+        }
+
+        if(fromUserId.toString() === toUserId){
             throw new Error("you cant send request to your own id");
         }
         const isToUserIdValid=await User.findById(toUserId);
         if(!isToUserIdValid){
             throw new Error("to user id is not valid");
         }
-        const oppositePerson=isToUserIdValid.lastName
-        const sameSidePerson=req.user.lastName
+        const oppositePerson=isToUserIdValid.lastName || 'User'
+        const sameSidePerson=req.user.lastName || 'User'
         const allowedStatus=["interested","ignored"];
         if(!allowedStatus.includes(status)){
             throw new Error("given status is not allowed");
@@ -43,12 +48,12 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async(req,res)=>
 
         const data=await request.save();
 
-        res.json({
+        res.status(201).json({
             message:`connection request send succcessfully ${sameSidePerson} send request to ${oppositePerson}`,
             data,
         })
     }catch(err){
-        res.status(400).send("ERROR while sending interest"+err);
+        res.status(400).json({ message: "ERROR while sending interest", error: err.message });
     }
 });
 
@@ -61,27 +66,35 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, r
             throw new Error("Status is not allowed");
         }
 
+        // Validate ObjectId format
+        if (!requestId || !/^[0-9a-fA-F]{24}$/.test(requestId)) {
+            throw new Error("Invalid request ID format");
+        }
+
         const request = await connectionrequestmodel.findById(requestId)
         if (!request) throw new Error("Request ID not found");
 
-        if(request.status!="interested") throw new Error("requested id has not interested button");
+        if(request.status !== "interested") throw new Error("requested id has not interested button");
 
         if (request.toUserId.toString() !== req.user._id.toString()) {
             throw new Error("Log in with appropriate user ID to review this request");
         }
         const oppositeGuy=await User.findById(request.fromUserId);
-        const oppositeGuyName=oppositeGuy.lastName
-        const sameSidePersonName=req.user.lastName
+        if(!oppositeGuy){
+            throw new Error("User not found");
+        }
+        const oppositeGuyName=oppositeGuy.lastName || 'User'
+        const sameSidePersonName=req.user.lastName || 'User'
 
         request.status = status;
         const savedRequest = await request.save();
 
-        res.json({
+        res.status(200).json({
             message: `Request ${status} successfully that is ${sameSidePersonName} reviewed ${oppositeGuyName} 's request`,
             data: savedRequest,
         });
     } catch (err) {
-        res.status(400).json({ error: err.message });
+        res.status(400).json({ message: "ERROR while reviewing request", error: err.message });
     }
 });
 
