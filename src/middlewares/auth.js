@@ -8,10 +8,10 @@ const userAuth = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ message: 'Token is not valid' })
     }
-    const decodedMessage = jwt.verify(token, process.env.JWT_SECRET || '2004lokesh')
+    const decodedMessage = jwt.verify(token, process.env.JWT_SECRET)
     const user = await User.findById(decodedMessage._id)
     if (!user) {
-      return res.status(404).json({ message: 'User not found' })
+      return res.status(401).json({ message: 'User not found' })
     }
     req.user = user
     next()

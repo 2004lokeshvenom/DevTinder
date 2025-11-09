@@ -9,7 +9,7 @@ profileRouter.get("/profile/view",userAuth,(req,res)=>{
     try{
         res.status(200).json({message:"view it below this",data:req.user});
     }catch(err){
-        res.status(500).json({ message: "something went wrong while viewing profile", error: err.message });
+        res.status(401).json({ message: "something went wrong while viewing profile", error: err.message });
     }
 })
 
