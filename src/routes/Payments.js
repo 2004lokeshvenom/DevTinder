@@ -50,11 +50,12 @@ PaymentsRouter.post('/payments/create', userAuth, async (req, res) => {
 PaymentsRouter.post('/payments/webhook', async (req, res) => {
   try {
     console.log('🔥 WEBHOOK RECEIVED')
-    console.log('Raw body:', req.body.toString())
 
     const webhookSignature = req.headers['x-razorpay-signature']
 
-    const rawBody = req.body.toString()
+    // For /payments/webhook, body is a Buffer (from express.raw); fall back to JSON string if not
+    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body)
+    console.log('Raw body:', rawBody)
 
     const isValid = validateWebhookSignature(rawBody, webhookSignature, process.env.RAZORPAY_WEBHOOK_SECRET)
 
@@ -63,7 +64,7 @@ PaymentsRouter.post('/payments/webhook', async (req, res) => {
       return res.status(400).json({ msg: 'Invalid signature' })
     }
 
-    const data = JSON.parse(rawBody)
+    const data = Buffer.isBuffer(req.body) ? JSON.parse(rawBody) : req.body
     const payment = data.payload.payment.entity
     const orderId = payment.order_id
 
