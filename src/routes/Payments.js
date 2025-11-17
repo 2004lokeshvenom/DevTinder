@@ -3,7 +3,7 @@ const { userAuth } = require('../middlewares/auth')
 const PaymentsRouter = express.Router()
 const RazorpayInstance = require('../utils/paymentsutil')
 const payments = require('../Models/payments')
-const {membershipType}=require("../utils/constants");
+const { membershipType } = require('../utils/constants')
 const { validateWebhookSignature } = require('razorpay/dist/utils/razorpay-utils')
 const User = require('../Models/userdb')
 
@@ -19,7 +19,7 @@ PaymentsRouter.post('/payments/create', userAuth, async (req, res) => {
     const order = await RazorpayInstance.orders.create({
       amount: amount,
       currency: 'INR',
-      receipt: "receipt1",
+      receipt: 'receipt1',
       notes: {
         firstName,
         lastName,
@@ -49,42 +49,51 @@ PaymentsRouter.post('/payments/create', userAuth, async (req, res) => {
 
 PaymentsRouter.post('/payments/webhook', async (req, res) => {
   try {
+    console.log('🔥 WEBHOOK RECEIVED')
+    console.log('Raw body:', req.body.toString())
+
     const webhookSignature = req.headers['x-razorpay-signature']
 
-    const isWebHookValid = validateWebhookSignature(JSON.stringify(req.body), webhookSignature, process.env.RAZORPAY_WEBHOOK_SECRET)
+    const rawBody = req.body.toString()
 
-    if (!isWebHookValid) {
-      return res.status(400).json({ msg: 'Invalid webhook signature' })
+    const isValid = validateWebhookSignature(rawBody, webhookSignature, process.env.RAZORPAY_WEBHOOK_SECRET)
+
+    if (!isValid) {
+      console.log('❌ Invalid signature')
+      return res.status(400).json({ msg: 'Invalid signature' })
     }
 
-    const payment = req.body.payload.payment.entity
+    const data = JSON.parse(rawBody)
+    const payment = data.payload.payment.entity
     const orderId = payment.order_id
 
-    const paymentRecord = await payments.findOne({ orderId: orderId })
+    console.log('OrderId from webhook:', orderId)
 
+    const paymentRecord = await payments.findOne({ orderId })
     if (!paymentRecord) {
+      console.log('❌ Payment record not found')
       return res.status(404).json({ msg: 'Payment record not found' })
     }
 
-    // Update payment info
     paymentRecord.status = payment.status
     paymentRecord.paymentId = payment.id
     await paymentRecord.save()
 
     const user = await User.findById(paymentRecord.userId)
-
     if (!user) {
       return res.status(404).json({ msg: 'User not found' })
     }
 
-    user.isPremium = true 
+    user.isPremium = true
     user.membershipType = paymentRecord.notes.membershipType
     await user.save()
 
-    return res.status(200).json({ msg: 'Webhook processed successfully' })
+    console.log('✅ Webhook processed, user updated')
+
+    res.status(200).json({ msg: 'OK' })
   } catch (err) {
-    console.log(err)
-    return res.status(500).json({ msg: 'webhook issue: ' + err.message })
+    console.log('❌ Error:', err)
+    res.status(500).json({ msg: err.message })
   }
 })
 
