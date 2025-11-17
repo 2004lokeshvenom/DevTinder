@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const { membershipType } = require('../utils/constants')
 
 const NewSchema = mongoose.Schema({
   firstName: {
@@ -28,6 +29,14 @@ const NewSchema = mongoose.Schema({
   },
   about: {
     type: String,
+  },
+  isPremium:{
+    type: Boolean,
+    default:false,
+  },
+  membershipType: {
+    type: String,
+    enum: ['silver', 'gold']
   },
 })
 
