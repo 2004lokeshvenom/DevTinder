@@ -13,7 +13,6 @@ require('./utils/shedule')
 
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
 
-// Use raw body ONLY for Razorpay webhook, JSON for everything else
 app.use((req, res, next) => {
   if (req.originalUrl === '/payments/webhook') {
     return express.raw({ type: 'application/json' })(req, res, next)

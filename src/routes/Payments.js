@@ -49,30 +49,20 @@ PaymentsRouter.post('/payments/create', userAuth, async (req, res) => {
 
 PaymentsRouter.post('/payments/webhook', async (req, res) => {
   try {
-    console.log('🔥 WEBHOOK RECEIVED')
-
     const webhookSignature = req.headers['x-razorpay-signature']
 
-    // For /payments/webhook, body is a Buffer (from express.raw); fall back to JSON string if not
     const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body)
-    console.log('Raw body:', rawBody)
-
     const isValid = validateWebhookSignature(rawBody, webhookSignature, process.env.RAZORPAY_WEBHOOK_SECRET)
 
     if (!isValid) {
-      console.log('❌ Invalid signature')
       return res.status(400).json({ msg: 'Invalid signature' })
     }
-
     const data = Buffer.isBuffer(req.body) ? JSON.parse(rawBody) : req.body
     const payment = data.payload.payment.entity
     const orderId = payment.order_id
 
-    console.log('OrderId from webhook:', orderId)
-
     const paymentRecord = await payments.findOne({ orderId })
     if (!paymentRecord) {
-      console.log('❌ Payment record not found')
       return res.status(404).json({ msg: 'Payment record not found' })
     }
 
@@ -89,12 +79,21 @@ PaymentsRouter.post('/payments/webhook', async (req, res) => {
     user.membershipType = paymentRecord.notes.membershipType
     await user.save()
 
-    console.log('✅ Webhook processed, user updated')
-
     res.status(200).json({ msg: 'OK' })
   } catch (err) {
-    console.log('❌ Error:', err)
     res.status(500).json({ msg: err.message })
+  }
+})
+
+PaymentsRouter.get('/ispremium/verify', userAuth, async (req, res) => {
+  try {
+    const user = req.user
+    if (user.isPremium) {
+      res.status(200).json({ isPremium: true })
+    }
+    res.status(200).json({ isPremuium: true })
+  } catch (err) {
+    res.status(400).json({ message: 'error while checking for ispremium' + err.message })
   }
 })
 
