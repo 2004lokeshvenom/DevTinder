@@ -79,7 +79,7 @@ requestRouter.post('/request/send/:status/:toUserId', userAuth, async (req, res)
         `
         const textBody = `You have a new interest request from ${req.user.firstName} ${sameSidePerson}. Review it at: ${loginUrl}`
         sendEmail
-          .run('lokeshvanamayya02@gmail.com', fromEmail, subject, htmlBody, textBody) //here change lokeshvanamayya@gmail.com to isToUserIdValid.email lateron
+          .run('lokeshvanamayya02@gmail.com', fromEmail, subject, htmlBody, textBody)
           .then(() => {
             console.log('Email sent successfully to', isToUserIdValid.email)
           })
@@ -158,7 +158,7 @@ requestRouter.post('/request/review/:status/:requestId', userAuth, async (req, r
         `
         const textBody = `you have a new notification ${sameSidePersonName} has ${status} your request in connecting with on DevTinder`
         sendEmail
-          .run('lokeshvanamayya02@gmail.com', fromEmail, subject, htmlBody, textBody)//here change lokeshvanamayya@gmail.com to oppositeGuy.email lateron
+          .run('lokeshvanamayya02@gmail.com', fromEmail, subject, htmlBody, textBody)
           .then(() => {
             console.log('Email sent successfully to', oppositeGuy.email)
           })

@@ -89,9 +89,9 @@ PaymentsRouter.get('/ispremium/verify', userAuth, async (req, res) => {
   try {
     const user = req.user
     if (user.isPremium) {
-      res.status(200).json({ isPremium: true })
+      return res.status(200).json({ isPremium: true })
     }
-    res.status(200).json({ isPremuium: true })
+    return res.status(200).json({ isPremium: false })
   } catch (err) {
     res.status(400).json({ message: 'error while checking for ispremium' + err.message })
   }

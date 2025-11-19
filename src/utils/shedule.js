@@ -28,13 +28,7 @@ cron.schedule('48 2 * * *', async () => {
         const html = `<h1>You have pending requests! Open DevTinder to review.</h1>`
         const text = 'You have pending requests! Open DevTinder to review.'
 
-        const res = await sendEmails.run(
-          "lokeshvanamayya02@gmail.com",
-          process.env.FROM_EMAIL,
-          subject,
-          html,
-          text
-        )
+        const res = await sendEmails.run('lokeshvanamayya02@gmail.com', process.env.FROM_EMAIL, subject, html, text)
 
         console.log('Mail sent:', res)
       } catch (err) {

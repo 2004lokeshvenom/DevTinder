@@ -12,7 +12,7 @@ const messagesSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true } // createdAt, updatedAt on each message
+  { timestamps: true }
 )
 
 const chatSchema = new mongoose.Schema({
