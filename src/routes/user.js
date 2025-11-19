@@ -46,7 +46,7 @@ userRouter.get('/user/requests', userAuth, async (req, res) => {
 
     if (users.length == 0) throw new Error('requests not there')
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'requests are there',
       data: users,
     })
@@ -62,7 +62,7 @@ userRouter.get('/feed', userAuth, async (req, res) => {
     limit = limit > 50 ? 50 : limit
     const page = parseInt(req.query.page) || 1
     if (isNaN(page) || page < 1) {
-      res.status(404).json({ message: 'Page must be a positive number' })
+      return res.status(404).json({ message: 'Page must be a positive number' })
     }
     const skip = (page - 1) * limit
 
@@ -88,11 +88,11 @@ userRouter.get('/feed', userAuth, async (req, res) => {
       .limit(limit)
 
     if (!data || data.length === 0) {
-      res.status(404).json({ message: 'error no feed found or use appropriate limit and page' })
+      return res.status(404).json({ message: 'error no feed found or use appropriate limit and page' })
     }
-    res.status(200).json({ message: 'data feed successfully', data: data })
+    return res.status(200).json({ message: 'data feed successfully', data: data })
   } catch (err) {
-    res.status(401).json({ message: 'Something went wrong', error: err.message })
+    return res.status(401).json({ message: 'Something went wrong', error: err.message })
   }
 })
 
