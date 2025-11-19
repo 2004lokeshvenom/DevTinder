@@ -283,7 +283,7 @@ ISC License
 
 ## 👤 Author
 
-**LokeshVanamayya**
+**Surisetti Lokesh Vanamayya**
 
 ## 🐛 Known Issues
 
@@ -296,4 +296,8 @@ For support, please open an issue in the repository or contact me at lokeshvanam
 ---
 
 **Note**: Make sure to keep your `.env` file secure and never commit it to version control. Add `.env` to your `.gitignore` file.
+
+---
+
+**Made with ❤️ for the Developer Community**
 
